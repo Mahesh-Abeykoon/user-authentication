@@ -2,16 +2,13 @@ const express = require('express');
 const passport = require('passport');
 const router = express.Router();
 const User = require('../models/User');
+const validator = require('validator');
 
-// Handle requests for homepage
 router.get('/', function (req, res) {
   res.json({ message: 'Welcome to the homepage' });
 });
 
-// Handle requests for login page
-router.get('/login', function (req, res) {
-  res.json({ message: 'Please login' });
-});
+
 
 // Handle requests for registration page
 router.get('/register', function (req, res) {
@@ -27,23 +24,42 @@ router.get('/secrets', function (req, res) {
   }
 });
 
+// // Handle registration request
+// router.post('/register', function (req, res) {
+//   User.register({ username: req.body.username }, req.body.password, function (
+//     err,
+//     user
+//   ) {
+//     if (err) {
+//       console.log(err);
+//       res.status(500).json({ message: 'Registration failed' });
+//     } else {
+//       res.json({ message: 'Registration successful' });
+//     }
+//   });
+// });
+
 // Handle registration request
 router.post('/register', function (req, res) {
-  User.register({ username: req.body.username }, req.body.password, function (
-    err,
-    user
-  ) {
+  const { username, password } = req.body;
+
+  if (!validator.isEmail(username)) {
+    return res.status(400).json({ message: 'Invalid email' });
+  }
+
+  User.register({ username }, password, function (err, user) {
     if (err) {
       console.log(err);
       res.status(500).json({ message: 'Registration failed' });
     } else {
-      res.json({ message: 'Registration successful' });
+      passport.authenticate('local')(req, res, function () {
+        res.status(200).json({ message: 'Registration successful' });
+      });
     }
   });
 });
 
-// Handle login request
-router.post('/login', function (req, res) {
+router.post('/', function (req, res) {
   const user = new User({
     username: req.body.username,
     password: req.body.password,
@@ -59,10 +75,16 @@ router.post('/login', function (req, res) {
   });
 });
 
-// Handle logout request
-router.get('/logout', function (req, res) {
-  req.logout();
-  res.json({ message: 'Logged out successfully' });
+router.get("/logout", function (req, res){
+  req.logout(function(err){
+    if(err) {
+      console.log(err);
+      res.status(500).json({ message: "Logout Failed" });
+    } else {
+      res.json({ message: "Logout Successfully" });
+    }
+  });
 });
+
 
 module.exports = router;
