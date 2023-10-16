@@ -6,19 +6,20 @@ const passport = require('passport');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+const MongoStore = require('connect-mongo');
+
 const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
 app.use(cors());
 
-app.use(
-  session({
+app.use(session({
     secret: 'test',
     resave: false,
     saveUninitialized: false,
-  })
-);
+    store:  MongoStore.create({ mongoUrl: 'mongodb://localhost:27017/myAuth' })
+  }));
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI, {

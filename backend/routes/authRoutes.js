@@ -4,29 +4,63 @@ const router = express.Router();
 const User = require('../models/User');
 const validator = require('validator');
 
-router.post('/register', async function (req, res) {
-  const { username, password } = req.body;
+// router.post('/register', async function (req, res) {
+//   const { username, password } = req.body;
 
-  if (!validator.isEmail(username)) {
-    return res.status(400).json({ message: 'Invalid email' });
-  }
+//   if (!validator.isEmail(username)) {
+//     return res.status(400).json({ message: 'Invalid email' });
+//   }
 
-  try {
-    // Register the user using passport-local-mongoose
-    const user = new User({ username });
-    await user.setPassword(password);
-    await user.save();
+//   try {
+//     // Register the user using passport-local-mongoose
+//     const user = new User({ username });
+//     await user.setPassword(password);
+//     await user.save();
 
-    // Authenticate the user
-    passport.authenticate('local')(req, res, function () {
-      res.status(200).json({ message: 'Registration successful' });
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: `Registration failed: ${error.message}` });
-  }
+//     // Authenticate the user
+//     passport.authenticate('local')(req, res, function () {
+//       res.status(200).json({ message: 'Registration successful' });
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: `Registration failed: ${error.message}` });
+//   }
+// });
+
+// router.post('/register', function (req, res) {
+//   const { username, password } = req.body;
+
+//   if (!validator.isEmail(username)) {
+//     return res.status(400).json({ message: 'Invalid email' });
+//   }
+
+//   User.register({ username }, password, function (err, user) {
+//     if (err) {
+//       console.log(err);
+//       res.status(500).json({ message: 'Registration failed' });
+//     } else {
+//       passport.authenticate('local')(req, res, function () {
+//         res.status(200).json({ message: 'Registration successful' });
+//       });
+//     }
+//   });
+// });
+
+router.post('/', function (req, res) {
+  const user = new User({
+    username: req.body.username,
+    password: req.body.password,
+  });
+
+  req.login(user, function (err) {
+    if (err) {
+      console.log(err);
+      res.status(500).json({ message: 'Login failed' });
+    } else {
+      res.json({ message: 'Login successful' });
+    }
+  });
 });
-
 router.post('/login', passport.authenticate('local'), function (req, res) {
   // Successful login
   res.json({ message: 'Login successful' });
@@ -75,28 +109,28 @@ router.post('/login', async function (req, res) {
   }
 });
 
+// router.get('/google', passport.authenticate('google', { scope: ['profile'] }));
 
-router.get('/google', passport.authenticate('google', { scope: ['profile'] }));
+// router.get('/google/callback', passport.authenticate('google'), (req, res) => {
+//   const user = req.user;
 
-router.get('/google/callback', passport.authenticate('google'), (req, res) => {
-  const user = req.user;
+//   if (!user) {
+//     res.status(401).json({ message: 'Authentication failed' });
+//   } else {
+//     res.status(200).json({ message: 'Authentication successful', user });
+//   }
+// });
 
-  if (!user) {
-    res.status(401).json({ message: 'Authentication failed' });
-  } else {
-    res.status(200).json({ message: 'Authentication successful', user });
-  }
-});
 
-router.get('/logout', function (req, res) {
-  req.logout(function (err) {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ message: 'Logout Failed' });
-    } else {
-      res.json({ message: 'Logout Successfully' });
-    }
-  });
-});
+// router.get('/logout', function (req, res) {
+//   req.logout(function (err) {
+//     if (err) {
+//       console.log(err);
+//       res.status(500).json({ message: 'Logout Failed' });
+//     } else {
+//       res.json({ message: 'Logout Successfully' });
+//     }
+//   });
+// });
 
 module.exports = router;
