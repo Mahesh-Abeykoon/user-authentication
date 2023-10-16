@@ -40,40 +40,40 @@ router.get('/secrets', function (req, res) {
 // });
 
 // Handle registration request
-router.post('/register', function (req, res) {
-  const { username, password } = req.body;
+// router.post('/register', function (req, res) {
+//   const { username, password } = req.body;
 
-  if (!validator.isEmail(username)) {
-    return res.status(400).json({ message: 'Invalid email' });
-  }
+//   if (!validator.isEmail(username)) {
+//     return res.status(400).json({ message: 'Invalid email' });
+//   }
 
-  User.register({ username }, password, function (err, user) {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ message: 'Registration failed' });
-    } else {
-      passport.authenticate('local')(req, res, function () {
-        res.status(200).json({ message: 'Registration successful' });
-      });
-    }
-  });
-});
+//   User.register({ username }, password, function (err, user) {
+//     if (err) {
+//       console.log(err);
+//       res.status(500).json({ message: 'Registration failed' });
+//     } else {
+//       passport.authenticate('local')(req, res, function () {
+//         res.status(200).json({ message: 'Registration successful' });
+//       });
+//     }
+//   });
+// });
 
-router.post('/', function (req, res) {
-  const user = new User({
-    username: req.body.username,
-    password: req.body.password,
-  });
+// router.post('/', function (req, res) {
+//   const user = new User({
+//     username: req.body.username,
+//     password: req.body.password,
+//   });
 
-  req.login(user, function (err) {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ message: 'Login failed' });
-    } else {
-      res.json({ message: 'Login successful' });
-    }
-  });
-});
+//   req.login(user, function (err) {
+//     if (err) {
+//       console.log(err);
+//       res.status(500).json({ message: 'Login failed' });
+//     } else {
+//       res.json({ message: 'Login successful' });
+//     }
+//   });
+// });
 
 router.get("/logout", function (req, res){
   req.logout(function(err){
@@ -86,5 +86,22 @@ router.get("/logout", function (req, res){
   });
 });
 
+
+// router.get('/auth/google/secrets', passport.authenticate('google'), (req, res) => {
+//   const user = req.user;
+//   if (!user) {
+//     res.status(401).json({ message: 'Google Authentication failed' });
+//   } else {
+//     res.status(200).json({ message: 'Google Authentication successful', user });
+//   }
+// });
+
+router.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile'] }));
+
+router.get('/auth/google/secrets', passport.authenticate('google', { failureRedirect: '/login' }),
+  function(req, res) {
+    res.redirect('http://localhost:3000/secrets');
+  });
 
 module.exports = router;
